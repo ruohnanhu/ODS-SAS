@@ -1,0 +1,315 @@
+/* A program to use ODS to Microsoft Excel with REPORT Procedure */
+libname learn "/folders/myshortcuts/sf_myfolders/learning";
+
+/* ABSTRACT 
+Learn how to use PROC REPORT to create polished tables that contain formulas, colored
+cells, and other customized formatting. Also presented in the paper are the destination options used to create various workbook structures, such as multiple tables per worksheet. Using these techniques to automate the creation of your Excel reports will save you hours of time and frustration, enabling you to pursue other endeavors.
+
+*/
+data survey1; set learn.survey1;
+   *array myvars{5} Q1-Q5;
+   array myvars{*} _character_;
+   do i = 1 to dim(myvars);
+      if myvars{i} = '1' then myvars{i} = '5';
+      else if myvars{i} = '2' then myvars{i} = '4';
+      else if myvars{i} = '3' then myvars{i} = '3';
+      else if myvars{i} = '4' then myvars{i} = '2';  
+      else if myvars{i} = '5' then myvars{i} = '1';      
+   end;
+   drop i;
+run;
+proc print data=survey1;
+run;
+
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/FINDME.xlsx";
+proc report data=survey1;
+run;
+ods excel close;
+
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/FINDME.xlsx" options(embedded_titles='yes'
+ embedded_footnotes='yes' tab_color='purple' start_at='2,4'
+ frozen headers='yes');
+title 'This title will appear in the worksheet';
+footnote 'This footnote will appear in the worksheet';
+proc report data=sashelp.class;
+run;
+ods excel close;
+
+
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example2.xlsx" options(embedded_titles='yes'
+ embedded_footnotes='yes' tab_color='purple' start_at='2,4'
+ frozen_headers='yes' title_footnote_nobreak='yes');
+
+
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example3.xlsx" options(hidden_rows='6' autofilter='1-3'
+ absolute_column_width='16' absolute_row_height='25');
+proc report data=sashelp.cars;
+run;
+ods excel close;
+
+/*this insert a page break between the 2 sex grouped/defined tables*/
+ODS excel file="/folders/myshortcuts/sf_myfolders/finalProject/example4.xlsx";
+proc report data=sashelp.class;
+column sex name age height weight;
+define sex / group;
+break after sex / page;
+run;
+ods excel close;
+
+
+/**********************************************************
+ **********START OF EXAMPLES 5 - 8*************************
+ **********************************************************
+ **********************************************************
+ **********************************************************/
+/*example 5*/
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example5.xlsx" options(sheet_name='Cars by Make'
+ sheet_interval='none'); /*adding the worksheet name*/
+proc report data=sashelp.cars;
+by make;
+column model type invoice;
+run;
+ods excel close;
+/*end of example 5*/
+
+
+/*example 6*/
+/*create statistical tables for mutiple variables with page inserted after each table*/
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example6.xlsx" options(sheet_interval='none'
+ sheet_name='Class');
+proc report data=sashelp.class;
+column age height weight;
+define age / group;
+define height / mean;
+define weight / mean;
+rbreak before / summarize;
+run;
+proc report data=sashelp.class;
+column sex height weight;
+define sex / group;
+define height / mean;
+define weight / mean;
+rbreak before / summarize;
+run;
+ods excel options(sheet_interval='output');
+ods exclude all;
+data _null_;
+declare odsout obj();
+run;
+ods select all;
+ods excel options(sheet_interval='none' sheet_name='Heart');
+proc report data=sashelp.heart;
+column bp_status height weight;
+define bp_status / group;
+define height / mean;
+define weight / mean;
+rbreak before / summarize;
+run;
+proc report data=sashelp.heart;
+column sex height weight;
+define sex / group;
+define height / mean;
+define weight / mean;
+rbreak before / summarize;
+run;
+ods excel close;
+
+/*end of example 6*/
+
+/*example 7*/
+%macro prcode(sheetname, dsname, grpvar);
+ods excel options(sheet_interval='none' sheet_name="&sheetname");
+proc report data=&dsname;
+column &grpvar height weight;
+define &grpvar / group;
+define height / mean;
+define weight / mean;
+rbreak before / summarize;
+run;
+%mend prcode;
+%macro newsheet;
+ods excel options(sheet_interval='output');
+ods exclude all;
+data _null_;
+declare odsout obj();
+run;
+ods select all;
+%mend newsheet;
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example7.xlsx";
+%prcode(Class, sashelp.class, age);
+%prcode(Class, sashelp.class, sex);
+%newsheet;
+%prcode(Heart, sashelp.heart, bp_status);
+%prcode(Heart, sashelp.heart, sex);
+ods excel close;
+
+/*end of example 7*/
+proc print data=sashelp.pricedata;
+run;
+
+
+/*example 8*/
+data pricedata;
+length productname $50.;
+set sashelp.pricedata;
+if productname="Product8" then product=8;
+else if productname="Product9" then product=9;
+else if productname="Product10" then product=10;
+else if productname="Product11" then product=11;
+productnum = put(product,z3.);
+run;
+
+proc print data=pricedata;
+run;
+
+
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example8.xlsx" options(embedded_titles='yes'
+ frozen_headers='yes');
+title "Year-end Sales Totals";
+proc report data=pricedata style(summary)=[font_weight=bold]; 
+column region regionname product productname productnum cost price
+ sale;
+define region / group noprint order=internal;
+define regionname / group noprint;
+define product / group noprint order=internal;
+define productname / group;
+define productnum / group 'Product Number' format=$3.; 
+
+define price / style(column)=[tagattr="format:$#,###.00;$-#,###.00"];
+define cost / style(column)=[tagattr="format:$#,###;$-#,###"];
+define sale / style(column)=[tagattr="format:#,###"];
+break after regionname / summarize; 
+rbreak after /summarize; 
+compute before regionname /style=[background=lightblue just=l
+ font_weight=bold];
+line regionname $20.; 
+endcomp;
+compute after regionname;
+productname = catx(' ','Total',regionname); 
+if _break_ ^= '' then call define(_row_,'style',
+'style=[bordertopstyle=solid bordertopwidth=1pt
+bordertopcolor=black borderbottomstyle=solid borderbottomwidth=1pt
+borderbottomcolor=black]'); 
+line ' '; 
+endcomp;
+compute after;
+productname = "All Regions"; 
+call define(_row_,'style','style=[bordertopstyle=solid
+bordertopwidth=1pt bordertopcolor=black borderbottomstyle=solid
+borderbottomwidth=1pt borderbottomcolor=black]'); 
+call define('price.sum','style','style=[tagattr="format:$#,###;$-
+#,###"]'); 
+endcomp;
+compute sale;
+if _break_ = '' then do; 
+if sale.sum < 20000 then call define(_col_,'style',
+'style=[background=red]');
+else if sale.sum > 30000 then call define(_col_,'style',
+'style=[background=green]');
+end;
+else if upcase(_break_) = 'REGIONNAME' then do; 
+if region = 1 then call define('sale.sum','style',
+'style=[tagattr="formula:sum(E5:E7) format:#,###"]');
+else if region = 2 then call define('sale.sum','style',
+'style=[tagattr="formula:sum(E11:E18) format:#,###"]');
+else if region = 2 then call define('sale.sum','style',
+'style=[tagattr="formula:sum(E22:E27) format:#,###"]');
+end;
+else if _break_ = '_RBREAK_' then do; 
+call define('sale.sum','style',
+'style=[tagattr="formula:sum(E8,E19,E28) format:#,###"]');
+end;
+endcomp;
+run;
+ods excel close;
+
+/*end of example 8*/
+
+
+proc format;
+value reg
+1 = 'Top Region'
+2 = 'Middle Region'
+3 = 'Bottom Region';
+run;
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example9.xlsx";
+proc report data=sashelp.pricedata;
+column region char_reg cost price sale;
+define region / group noprint;
+define char_reg / computed 'Region';
+rbreak after / summarize;
+compute char_reg /char length=50;
+char_reg = put(region,reg.);
+if _break_ = '_RBREAK_' then char_reg = 'Total for All Regions';
+endcomp;
+run;
+ods excel close;
+
+
+
+ods path(prepend) work.templat(update);
+proc template;
+define style styles.nogray;
+parent=styles.excel;
+class header, data, dataemphasis, linecontent /
+borderstyle=hidden;
+end;
+/*
+define style styles.gray;
+parent=styles.ocean;
+class header, data, dataemphasis, linecontent /
+borderstyle=solid;
+end;
+ */
+run;
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example10.xlsx" style=styles.nogray;
+proc report data=sashelp.class;
+run;
+ods excel close;
+
+
+ods path(prepend) work.templat(update);
+proc template;
+define style styles.eborders;
+parent=styles.excel;
+class data /
+borderstyle=solid
+borderwidth=1px
+bordercolor=black;
+class header /
+borderstyle=solid
+borderwidth=1px
+bordercolor=black;
+end;
+run;
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example11.xlsx" style=styles.eborders;
+proc report data=sashelp.class;
+run;
+ods excel close;
+
+ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example12.xlsx" options(sheet_interval='none');
+proc report data=sashelp.pricedata;
+column region ('A' cost) ('B' price) ('C' sale);
+define region / group;
+define cost / style(header)=[background=yellow];
+define price / style(header)=[background=lightblue];
+define sale / style(header)=[background=lightred];
+run;
+data pricedata;
+set sashelp.pricedata;
+acr1='A';
+acr2='B';
+acr3='C';
+run;
+proc report data=pricedata;
+column region acr1,cost acr2,price acr3,sale;
+define region / group;
+define cost / style(header)=[background=yellow];
+define price / style(header)=[background=lightblue];
+define sale / style(header)=[background=lightred];
+define acr1 / across ' ' style(header)=[background=yellow];
+define acr2 / across ' ' style(header)=[background=lightblue];
+define acr3 / across ' ' style(header)=[background=lightred];
+run;
+ods excel close;
+
