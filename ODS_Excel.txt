@@ -21,12 +21,12 @@ run;
 proc print data=survey1;
 run;
 
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/FINDME.xlsx";
+ods excel file="/folders/myshortcuts/sf_myfolders/project/FINDME.xlsx";
 proc report data=survey1;
 run;
 ods excel close;
 
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/FINDME.xlsx" options(embedded_titles='yes'
+ods excel file="/folders/myshortcuts/sf_myfolders/project/FINDME.xlsx" options(embedded_titles='yes'
  embedded_footnotes='yes' tab_color='purple' start_at='2,4'
  frozen headers='yes');
 title 'This title will appear in the worksheet';
@@ -36,19 +36,19 @@ run;
 ods excel close;
 
 
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example2.xlsx" options(embedded_titles='yes'
+ods excel file="/folders/myshortcuts/sf_myfolders/project/example2.xlsx" options(embedded_titles='yes'
  embedded_footnotes='yes' tab_color='purple' start_at='2,4'
  frozen_headers='yes' title_footnote_nobreak='yes');
 
 
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example3.xlsx" options(hidden_rows='6' autofilter='1-3'
+ods excel file="/folders/myshortcuts/sf_myfolders/project/example3.xlsx" options(hidden_rows='6' autofilter='1-3'
  absolute_column_width='16' absolute_row_height='25');
 proc report data=sashelp.cars;
 run;
 ods excel close;
 
-/*this insert a page break between the 2 sex grouped/defined tables*/
-ODS excel file="/folders/myshortcuts/sf_myfolders/finalProject/example4.xlsx";
+/*this inserts a page break between the 2 sex grouped/defined tables*/
+ODS excel file="/folders/myshortcuts/sf_myfolders/project/example4.xlsx";
 proc report data=sashelp.class;
 column sex name age height weight;
 define sex / group;
@@ -63,7 +63,7 @@ ods excel close;
  **********************************************************
  **********************************************************/
 /*example 5*/
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example5.xlsx" options(sheet_name='Cars by Make'
+ods excel file="/folders/myshortcuts/sf_myfolders/project/example5.xlsx" options(sheet_name='Cars by Make'
  sheet_interval='none'); /*adding the worksheet name*/
 proc report data=sashelp.cars;
 by make;
@@ -75,7 +75,7 @@ ods excel close;
 
 /*example 6*/
 /*create statistical tables for mutiple variables with page inserted after each table*/
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example6.xlsx" options(sheet_interval='none'
+ods excel file="/folders/myshortcuts/sf_myfolders/project/example6.xlsx" options(sheet_interval='none'
  sheet_name='Class');
 proc report data=sashelp.class;
 column age height weight;
@@ -135,7 +135,7 @@ declare odsout obj();
 run;
 ods select all;
 %mend newsheet;
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example7.xlsx";
+ods excel file="/folders/myshortcuts/sf_myfolders/project/example7.xlsx";
 %prcode(Class, sashelp.class, age);
 %prcode(Class, sashelp.class, sex);
 %newsheet;
@@ -163,7 +163,7 @@ proc print data=pricedata;
 run;
 
 
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example8.xlsx" options(embedded_titles='yes'
+ods excel file="/folders/myshortcuts/sf_myfolders/project/example8.xlsx" options(embedded_titles='yes'
  frozen_headers='yes');
 title "Year-end Sales Totals";
 proc report data=pricedata style(summary)=[font_weight=bold]; 
@@ -232,7 +232,7 @@ value reg
 2 = 'Middle Region'
 3 = 'Bottom Region';
 run;
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example9.xlsx";
+ods excel file="/folders/myshortcuts/sf_myfolders/project/example9.xlsx";
 proc report data=sashelp.pricedata;
 column region char_reg cost price sale;
 define region / group noprint;
@@ -262,7 +262,7 @@ borderstyle=solid;
 end;
  */
 run;
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example10.xlsx" style=styles.nogray;
+ods excel file="/folders/myshortcuts/sf_myfolders/project/example10.xlsx" style=styles.nogray;
 proc report data=sashelp.class;
 run;
 ods excel close;
@@ -282,12 +282,12 @@ borderwidth=1px
 bordercolor=black;
 end;
 run;
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example11.xlsx" style=styles.eborders;
+ods excel file="/folders/myshortcuts/sf_myfolders/project/example11.xlsx" style=styles.eborders;
 proc report data=sashelp.class;
 run;
 ods excel close;
 
-ods excel file="/folders/myshortcuts/sf_myfolders/finalProject/example12.xlsx" options(sheet_interval='none');
+ods excel file="/folders/myshortcuts/sf_myfolders/project/example12.xlsx" options(sheet_interval='none');
 proc report data=sashelp.pricedata;
 column region ('A' cost) ('B' price) ('C' sale);
 define region / group;
